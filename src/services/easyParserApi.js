@@ -29,7 +29,13 @@ async function searchProduct(title) {
   const timeout = setTimeout(() => controller.abort(), 30000);
 
   try {
-    const response = await fetch(url.toString(), { signal: controller.signal });
+    const response = await fetch(url.toString(), {
+      signal: controller.signal,
+      headers: {
+        'Accept': 'application/json',
+        'User-Agent': 'ASINFinder/1.0',
+      },
+    });
 
     if (response.status === 429) {
       const retryAfter = response.headers.get('retry-after');
@@ -40,6 +46,13 @@ async function searchProduct(title) {
 
     if (!response.ok) {
       throw new ApiError(`HTTP ${response.status}`, response.status);
+    }
+
+    const contentType = response.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      const body = await response.text();
+      console.error('[EasyParser] Non-JSON response:', contentType, body.substring(0, 500));
+      throw new ApiError('EasyParser returned non-JSON response (possible Cloudflare block)', 502);
     }
 
     const data = await response.json();
