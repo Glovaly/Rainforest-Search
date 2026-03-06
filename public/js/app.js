@@ -54,7 +54,13 @@ if (uploadForm) {
       const res = await fetch('/upload', {
         method: 'POST',
         body: formData,
+        headers: { 'Accept': 'application/json' },
       });
+
+      if (res.redirected || res.status === 401) {
+        window.location.href = '/login';
+        return;
+      }
 
       const data = await res.json();
 
