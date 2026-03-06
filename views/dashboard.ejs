@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ASIN Finder</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container">
+      <h1 class="nav-title">ASIN Finder</h1>
+      <form method="POST" action="/logout" style="margin:0">
+        <button type="submit" class="btn btn-sm btn-outline">Logout</button>
+      </form>
+    </div>
+  </nav>
+
+  <main class="container">
+    <!-- Upload Section -->
+    <section id="uploadSection" class="card">
+      <h2>Search Amazon ASINs</h2>
+      <form id="uploadForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="competitor">Competitor</label>
+            <div class="competitor-input">
+              <select id="competitorSelect">
+                <option value="">-- Select competitor --</option>
+                <% competitors.forEach(c => { %>
+                  <option value="<%= c.name %>"><%= c.name %></option>
+                <% }); %>
+                <option value="__new__">+ Add new competitor</option>
+              </select>
+              <input type="text" id="competitorNew" placeholder="Enter competitor name" style="display:none">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="csvFile">CSV File</label>
+            <input type="file" id="csvFile" accept=".csv" required>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary" id="uploadBtn">Upload & Search</button>
+      </form>
+    </section>
+
+    <!-- Progress Section -->
+    <section id="progressSection" class="card" style="display:none">
+      <h2>Search Progress</h2>
+      <div class="progress-container">
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+        </div>
+        <span class="progress-text" id="progressText">0%</span>
+      </div>
+      <div class="stats-row">
+        <div class="stat">
+          <span class="stat-value" id="statCompleted">0</span>
+          <span class="stat-label">Completed</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value stat-found" id="statFound">0</span>
+          <span class="stat-label">Found</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value stat-notfound" id="statNotFound">0</span>
+          <span class="stat-label">Not Found</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value stat-error" id="statErrors">0</span>
+          <span class="stat-label">Errors</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value" id="statTotal">0</span>
+          <span class="stat-label">Total</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Results Section -->
+    <section id="resultsSection" class="card" style="display:none">
+      <div class="results-header">
+        <h2>Results</h2>
+        <button class="btn btn-primary btn-sm" id="downloadBtn" style="display:none">Download CSV</button>
+      </div>
+      <div class="table-wrapper">
+        <table class="results-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Original Title</th>
+              <th>ASIN</th>
+              <th>Product URL</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="resultsBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Job History -->
+    <section class="card">
+      <h2>Job History</h2>
+      <% if (jobs.length === 0) { %>
+        <p class="text-muted">No jobs yet. Upload a CSV to get started.</p>
+      <% } else { %>
+        <div class="table-wrapper">
+          <table class="results-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Competitor</th>
+                <th>File</th>
+                <th>Total</th>
+                <th>Found</th>
+                <th>Not Found</th>
+                <th>Errors</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% jobs.forEach(job => { %>
+                <tr>
+                  <td><%= new Date(job.created_at).toLocaleDateString() %></td>
+                  <td><%= job.competitors?.name || '-' %></td>
+                  <td class="truncate"><%= job.filename %></td>
+                  <td><%= job.total_titles %></td>
+                  <td><%= job.found %></td>
+                  <td><%= job.not_found %></td>
+                  <td><%= job.errors %></td>
+                  <td><span class="badge badge-<%= job.status %>"><%= job.status %></span></td>
+                  <td>
+                    <% if (job.status === 'completed') { %>
+                      <a href="/jobs/<%= job.id %>/download" class="btn btn-sm btn-outline">Download</a>
+                    <% } else if (job.status === 'processing') { %>
+                      <button class="btn btn-sm btn-outline" onclick="resumeSSE('<%= job.id %>')">View Progress</button>
+                    <% } %>
+                  </td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+    </section>
+  </main>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>
