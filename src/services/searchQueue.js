@@ -1,6 +1,6 @@
 const PQueue = require('p-queue').default;
 const { EventEmitter } = require('events');
-const { searchProduct, RateLimitError } = require('./rainforestApi');
+const { searchProduct, RateLimitError } = require('./easyParserApi');
 const db = require('../db');
 const config = require('../config');
 

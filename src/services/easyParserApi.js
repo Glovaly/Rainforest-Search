@@ -17,12 +17,13 @@ class ApiError extends Error {
 }
 
 async function searchProduct(title) {
-  const url = new URL('https://api.rainforestapi.com/request');
-  url.searchParams.set('api_key', config.RAINFOREST_API_KEY);
-  url.searchParams.set('type', 'search');
-  url.searchParams.set('amazon_domain', config.AMAZON_DOMAIN);
-  url.searchParams.set('search_term', title);
-  url.searchParams.set('exclude_sponsored', 'true');
+  const url = new URL('https://realtime.easyparser.com/v1/request');
+  url.searchParams.set('api_key', config.EASYPARSER_API_KEY);
+  url.searchParams.set('platform', 'AMZ');
+  url.searchParams.set('operation', 'SEARCH');
+  url.searchParams.set('domain', config.AMAZON_DOMAIN);
+  url.searchParams.set('keyword', title);
+  url.searchParams.set('output', 'json');
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 30000);
@@ -43,12 +44,29 @@ async function searchProduct(title) {
 
     const data = await response.json();
 
-    if (data.search_results && data.search_results.length > 0) {
-      const top = data.search_results[0];
+    // Check EasyParser's success flag
+    if (data.request_info && !data.request_info.success) {
+      throw new ApiError(
+        data.request_info.message || `API error: ${data.request_info.status_code}`,
+        data.request_info.status_code || 500
+      );
+    }
+
+    // Extract search results from EasyParser response
+    const results = data.result?.search_results
+      || data.result?.results
+      || (Array.isArray(data.result) ? data.result : null);
+
+    if (results && results.length > 0) {
+      const top = results[0];
+      const asin = top.asin;
+      const productUrl = top.url || top.link || top.product_url
+        || (asin ? `https://www.amazon.com/dp/${asin}` : null);
+
       return {
-        asin: top.asin,
-        product_url: top.link || top.product_url || `https://www.amazon.com/dp/${top.asin}`,
-        status: 'found',
+        asin,
+        product_url: productUrl,
+        status: asin ? 'found' : 'not_found',
       };
     }
 

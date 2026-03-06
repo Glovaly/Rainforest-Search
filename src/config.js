@@ -1,6 +1,6 @@
 module.exports = {
   PORT: process.env.PORT || 3000,
-  RAINFOREST_API_KEY: process.env.RAINFOREST_API_KEY,
+  EASYPARSER_API_KEY: process.env.EASYPARSER_API_KEY,
   SESSION_SECRET: process.env.SESSION_SECRET || 'change-me-in-production',
   ADMIN_USERNAME: process.env.ADMIN_USERNAME || 'admin',
   ADMIN_PASSWORD: process.env.ADMIN_PASSWORD,
@@ -10,5 +10,5 @@ module.exports = {
   REQUEST_DELAY_MS: parseInt(process.env.REQUEST_DELAY_MS || '500', 10),
   MAX_RETRIES: parseInt(process.env.MAX_RETRIES || '2', 10),
   RETRY_BASE_DELAY_MS: parseInt(process.env.RETRY_BASE_DELAY_MS || '2000', 10),
-  AMAZON_DOMAIN: process.env.AMAZON_DOMAIN || 'amazon.com',
+  AMAZON_DOMAIN: process.env.AMAZON_DOMAIN || '.com',
 };

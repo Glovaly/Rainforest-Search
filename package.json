@@ -1,7 +1,7 @@
 {
   "name": "asin-finder",
   "version": "1.0.0",
-  "description": "Amazon ASIN Finder - Search ASINs from product titles via Rainforest API",
+  "description": "Amazon ASIN Finder - Search ASINs from product titles via EasyParser API",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
