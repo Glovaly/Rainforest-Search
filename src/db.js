@@ -132,24 +132,48 @@ async function createResults(results) {
 }
 
 async function getResultsByJobId(jobId) {
-  const { data, error } = await supabase
-    .from('results')
-    .select('*')
-    .eq('job_id', jobId)
-    .order('id');
-  if (error) throw error;
-  return data;
+  const all = [];
+  const pageSize = 1000;
+  let from = 0;
+
+  while (true) {
+    const { data, error } = await supabase
+      .from('results')
+      .select('*')
+      .eq('job_id', jobId)
+      .order('id')
+      .range(from, from + pageSize - 1);
+    if (error) throw error;
+    if (!data || data.length === 0) break;
+    all.push(...data);
+    if (data.length < pageSize) break;
+    from += pageSize;
+  }
+
+  return all;
 }
 
 async function getPendingResults(jobId) {
-  const { data, error } = await supabase
-    .from('results')
-    .select('*')
-    .eq('job_id', jobId)
-    .eq('status', 'pending')
-    .order('id');
-  if (error) throw error;
-  return data;
+  const all = [];
+  const pageSize = 1000;
+  let from = 0;
+
+  while (true) {
+    const { data, error } = await supabase
+      .from('results')
+      .select('*')
+      .eq('job_id', jobId)
+      .eq('status', 'pending')
+      .order('id')
+      .range(from, from + pageSize - 1);
+    if (error) throw error;
+    if (!data || data.length === 0) break;
+    all.push(...data);
+    if (data.length < pageSize) break;
+    from += pageSize;
+  }
+
+  return all;
 }
 
 async function updateResult(resultId, updates) {
